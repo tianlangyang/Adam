@@ -1,7 +1,7 @@
 ---
-  ###  
-  
-  ###
+  ### Name: Tianlang Yang
+  ### MA 415
+  ### Assignment 1
 ---
 #1.  
 #(a)
