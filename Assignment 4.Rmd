@@ -1,0 +1,65 @@
+---
+title: "Assignment 4"
+author: "Tianlang Yang"
+date: "February 21, 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##10.5
+
+##1.
+Tibbles are data frames, and only print a limited number of rows and show the class on top of each column.
+```{r}
+
+library(tidyverse)
+mtcars
+```
+
+##2.
+```{r}
+df <- data.frame(abc = 1, xyz = "a")
+df$x
+df[, "xyz"]
+df[, c("abc", "xyz")]
+
+tbl <- as_tibble(df)
+tbl$x
+tbl[, "xyz"]
+tbl[, c("abc", "xyz")]
+
+```
+
+
+##3.
+You can use the double bracket. You can't use the dollar sign, because df$var would look for a column named var.
+
+##4.
+```{r}
+annoying <- tibble(
+  `1` = 1:10,
+  `2` = `1` * 2 + rnorm(length(`1`))
+)
+
+annoying[["1"]]
+annoying$`1`
+ggplot(annoying, aes(x = `1`, y = `2`)) +
+  geom_point()
+annoying[["3"]] <- annoying$`2` / annoying$`1`
+annoying <- rename(annoying, one = `1`, two = `2`, three = `3`)
+glimpse(annoying)
+```
+
+##5.
+It converts named vectors to a data frame with names and values
+```{r}
+enframe(c(a = 1, b = 2, c = 3))
+
+```
+
+##6.
+The print function for tibbles is in print.tbl_df
+The option n_extra determines the number of extra columns to print information for.
