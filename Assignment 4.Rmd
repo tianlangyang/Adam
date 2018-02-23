@@ -63,3 +63,67 @@ enframe(c(a = 1, b = 2, c = 3))
 ##6.
 The print function for tibbles is in print.tbl_df
 The option n_extra determines the number of extra columns to print information for.
+
+
+
+##12.6.1
+```{r}
+who1 <- who %>%
+  gather(new_sp_m014:newrel_f65, key = "key", value = "cases", na.rm = TRUE)
+glimpse(who1)
+who2 <- who1 %>%
+ mutate(key = stringr::str_replace(key, "newrel", "new_rel"))
+who3 <- who2 %>%
+  separate(key, c("new", "type", "sexage"), sep = "_")
+who3
+who3 %>%
+  count(new)
+who4 <- who3 %>%
+  select(-new, -iso2, -iso3)
+who5 <- who4 %>%
+  separate(sexage, c("sex", "age"), sep = 1)
+who5
+
+```
+
+##1
+It is okay to treat missing values the same, and we don't lose any information by dropping them.
+```{r}
+who1 %>%
+  filter(cases == 0) %>%
+  nrow()
+
+gather(who, new_sp_m014:newrel_f65, key = "key", value = "cases") %>%
+  group_by(country, year)  %>%
+  mutate(missing = is.na(cases)) %>%
+  select(country, year, missing) %>%
+  distinct() %>%
+  group_by(country, year) %>%
+  filter(n() > 1)
+```
+
+##2
+separate emits the warning "too few values", and if we check the rows for keys beginning with "newrel_", we see that sexage is messing, and type = m014
+```{r}
+who3a <- who1 %>%
+  separate(key, c("new", "type", "sexage"), sep = "_")
+filter(who3a, new == "newrel") %>% head()
+```
+
+##3
+```{r}
+select(who3, country, iso2, iso3) %>%
+  distinct() %>%
+  group_by(country) %>%
+  filter(n() > 1)
+```
+
+```{r}
+who5 %>%
+  group_by(country, year, sex) %>%
+  filter(year > 1995) %>%
+  summarise(cases = sum(cases)) %>%
+  unite(country_sex, country, sex, remove = FALSE) %>%
+  ggplot(aes(x = year, y = cases, group = country_sex, colour = sex)) +
+  geom_line()
+```
