@@ -1,0 +1,80 @@
+---
+title: "Project 2 part 2"
+author: "Tianlang Yang"
+date: "March 17, 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+library(tidyverse)
+library(readxl)
+library(stringr)
+
+
+
+veg1 <- read_xlsx("veg1.xlsx")
+cnames <- colnames(veg1)
+
+
+
+##Data Cleaning
+a <- apply(veg1, 2, n_distinct)  
+b <- names(a[a==1]) 
+c <- names(a[a>1]) 
+
+veg2 <- select(veg1, c) 
+apply(veg2, 2, n_distinct) 
+
+veg3 <- rename(veg2, 
+              Geo = `Geo Level`, 
+              State = `State ANSI`,
+              Data = `Data Item`,
+              Category = `Domain Category`)
+
+unique(veg3[,"Commodity"])
+unique(veg3[,"Data"]) %>% print(n=60)
+unique(veg3[,"Domain"])
+unique(veg3[,"Category"])
+unique(veg3[,"Value"])
+
+veg4 <- veg3 %>%
+  separate(Domain, into = c("Type1", "Type2"), sep = ", ") %>%
+  separate(Category, into = c("Discard", "Name"), sep = ": ") %>%
+  select(-Discard) %>%
+  separate(Name, into = c("Name", "Code"), sep = "=") %>% 
+  separate(Name, into = c("Discard", "Name"), sep = 1) %>%
+  select(-Discard) %>%
+  separate(Code, into = c("Code", "Discard"), sep = -1) %>%
+  select(-Discard)
+
+unique(veg4[,"Type1"])
+unique(veg4[,"Type2"])
+
+
+
+
+
+
+
+
+##Organize Table
+veg4 %>%
+  filter(Type1 == "RESTRICTED USE CHEMICAL") %>%
+  group_by(Type2) %>%
+  summarize(n = n())
+
+veg4 %>%
+  group_by(Type1, Type2) %>%
+  summarize(n = n())
+
+View(veg4 %>% 
+  filter(Type1 == "RESTRICTED USE CHEMICAL") %>%
+  group_by(Name) %>%
+  summarize(n = n()))
+
+```
