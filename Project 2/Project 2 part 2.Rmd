@@ -18,63 +18,38 @@ library(stringr)
 
 
 veg1 <- read_xlsx("veg1.xlsx")
-cnames <- colnames(veg1)
 
 
-
-##Data Cleaning
+##Data Cleaning & tidy
 a <- apply(veg1, 2, n_distinct)  
-b <- names(a[a==1]) 
 c <- names(a[a>1]) 
 
 veg2 <- select(veg1, c) 
 apply(veg2, 2, n_distinct) 
 
-veg3 <- rename(veg2, 
-              Geo = `Geo Level`, 
-              State = `State ANSI`,
-              Data = `Data Item`,
-              Category = `Domain Category`)
-
-unique(veg3[,"Commodity"])
-unique(veg3[,"Data"]) %>% print(n=60)
-unique(veg3[,"Domain"])
-unique(veg3[,"Category"])
-unique(veg3[,"Value"])
-
-veg4 <- veg3 %>%
-  separate(Domain, into = c("Type1", "Type2"), sep = ", ") %>%
-  separate(Category, into = c("Discard", "Name"), sep = ": ") %>%
-  select(-Discard) %>%
-  separate(Name, into = c("Name", "Code"), sep = "=") %>% 
-  separate(Name, into = c("Discard", "Name"), sep = 1) %>%
-  select(-Discard) %>%
-  separate(Code, into = c("Code", "Discard"), sep = -1) %>%
-  select(-Discard)
-
-unique(veg4[,"Type1"])
-unique(veg4[,"Type2"])
+veg.tidy <- veg2 %>% 
+  #select(c) %>%
+  dplyr::rename(Area = `Geo Level`, State = `State ANSI`,
+                Data = `Data Item`, Category = `Domain Category`) %>%
+  separate(Category, into = c("Label", "Type"), sep=",") %>%
+  separate(Data, into=c("A","Class Desc"),sep=" - ") %>%
+  separate(`Class Desc`, into=c("Class Desc","Production Practice","Unit Desc"),sep=",") %>%
+  separate(`Production Practice`,into=c("Production Practice","Utilization Practice","Statistic Category"),sep=" / ") %>%
+  separate(Domain,into=c("Domain","B"),sep=", ") %>%
+  dplyr::rename(Type=`B`,Chemical=`Type`) %>%
+  separate(Chemical, into=c("C","Active Ingredient or Action Taken"),sep=": ") %>%
+  separate(`Active Ingredient or Action Taken`, into=c("D","Active ingredient or Action Taken","E"),sep=c(1,-2)) %>%
+  separate(`Active ingredient or Action Taken`, into=c("Active ingredient or Action Taken","EPA Pesticide Chemical Code"),sep="=") %>%
+  separate(Area,into=c("Area","G"),sep=" : ") %>%
+  select(-A,-Label,-C,-D,-E,-G)
 
 
+##Restricted use chemical 
 
-
-
-
-
-
-##Organize Table
-veg4 %>%
-  filter(Type1 == "RESTRICTED USE CHEMICAL") %>%
-  group_by(Type2) %>%
-  summarize(n = n())
-
-veg4 %>%
-  group_by(Type1, Type2) %>%
-  summarize(n = n())
-
-View(veg4 %>% 
-  filter(Type1 == "RESTRICTED USE CHEMICAL") %>%
-  group_by(Name) %>%
-  summarize(n = n()))
-
+veg4 <- veg.tidy %>%
+  filter(Domain=="RESTRICTED USE CHEMICAL") %>%
+  select(Commodity, Domain:`EPA Pesticide Chemical Code`) %>% 
+  unique() %>%
+  arrange(Type) %>% 
+  dplyr::rename(`Active Ingredient` = `Active ingredient or Action Taken`)
 ```
