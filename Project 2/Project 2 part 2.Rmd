@@ -28,7 +28,6 @@ veg2 <- select(veg1, c)
 apply(veg2, 2, n_distinct) 
 
 veg.tidy <- veg2 %>% 
-  #select(c) %>%
   dplyr::rename(Area = `Geo Level`, State = `State ANSI`,
                 Data = `Data Item`, Category = `Domain Category`) %>%
   separate(Category, into = c("Label", "Type"), sep=",") %>%
@@ -48,8 +47,28 @@ veg.tidy <- veg2 %>%
 
 veg4 <- veg.tidy %>%
   filter(Domain=="RESTRICTED USE CHEMICAL") %>%
-  select(Commodity, Domain:`EPA Pesticide Chemical Code`) %>% 
-  unique() %>%
-  arrange(Type) %>% 
-  dplyr::rename(`Active Ingredient` = `Active ingredient or Action Taken`)
+  select(Commodity, Domain:`EPA Pesticide Chemical Code`) %>%
+  unique()
+
+
+##toxicity measurement
+toxicity <- tibble(
+  `Toxicity Measurements` = 
+    c("20-150 mg/kg", "5620-8350 mg/kg", "20-150 mg/kg", "11 mg/kg", 
+      "869-1271 mg/kg", "54-70 mg/kg", "5000 mg/kg", "82-270 mg/kg", 
+      "869-1271 mg/kg", "3129 mg/kg", "458 mg/kg", "450 mg/kg", 
+      "144 mg/kg", "12-48 mg/kg", "50-281 mg/kg", "50 mg/kg",
+      "430-4000 mg/kg", "1563 mg/kg", "86 mg/kg", "380-651 mg/kg", 
+      "54-70 mg/kg", "5000 mg/kg", "3129 mg/kg", "458 mg/kg", 
+      "450 mg/kg", "144 mg/kg", "12-48 mg/kg", "50-281 mg/kg", 
+      "50 mg/kg", "430-4000 mg/kg", "1563 mg/kg", "86 mg/kg", 
+      "300-400 mg/kg", "60-387 mg/kg", "1.9-12.5 mg/kg", "72.1 mg/kg", 
+      "82-270 mg/kg", "869-1271 mg/kg", "150-500 mg/kg", "300-400 mg/kg", 
+      "4640 mg/kg", "56-79 mg/kg", "16-21 mg/kg", "73-79 mg/kg", 
+      "1.9-12.5 mg/kg", "56-79 mg/kg", "73-79 mg/kg", "121 mg/kg"
+    )
+)
+
+veg4 <- veg4 %>% 
+  bind_cols(toxicity)
 ```
