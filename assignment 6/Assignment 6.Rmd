@@ -1,0 +1,143 @@
+---
+title: "Assignment 6"
+author: "Tianlang Yang"
+date: "March 26, 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+##install.packages('ggmap')
+library(ggmap)
+library(tidyverse)
+library(jpeg)
+
+load("Bude_Map.RData")
+
+
+# Road Map of Bude
+
+ggmap(map.r)
+
+
+
+# Water Map of Bude
+
+ggmap(map.w)
+
+
+# Town of Bude
+ggmap(map.r) + geom_point(
+    aes(x = lon, y = lat),
+    data = gc1, color = "red", size = 3
+  )
+
+
+
+
+
+ggmap(map.w) + geom_point(
+    aes(x = lon, y = lat),
+    data = gc1, color = "red", size = 3
+  )
+```
+Bude is a small seaside resort town in north Cornwall, England, UK, in the civil parish of Bude-Stratton and at the mouth of the River Neet. It is sometimes formerly known as Bude Haven.
+
+```{r}
+# Crooklets Beach
+
+ggmap(map.r) + geom_point(
+    aes(x = lon, y = lat),
+    data = gc2, color = "blue", size = 3
+  )
+
+ggmap(map.w) + geom_point(
+    aes(x = lon, y = lat),
+    data = gc2, color = "blue", size = 3
+  )
+plot(1:10, ty = "n", xlab = "", ylab = "", yaxt = "n", xaxt = "n")
+rasterImage(readJPEG("Crooklets Beach.jpg"), 0, 0, 10.5, 10.5)
+```
+Crooklets Beach is popular with surfers, this beach includes a cafe & kids' play area along with hut rentals & showers.
+
+
+```{r}
+# Summerleaze Beach
+
+ggmap(map.r) + geom_point(
+    aes(x = lon, y = lat),
+    data = gc3, color = "green", size = 3
+  )
+
+ggmap(map.w) + geom_point(
+    aes(x = lon, y = lat),
+    data = gc3, color = "green", size = 3
+  )
+plot(1:10, ty = "n", xlab = "", ylab = "", yaxt = "n", xaxt = "n")
+rasterImage(readJPEG("Summerleaze Beach.jpg"), 0, 0, 10.5, 10.5)
+```
+Summerleaze Beach is a popular sandy stretch featuring a saltwater rock pool, beach huts (fee), a cafe & ample parking.
+
+```{r}
+# Cricket Ground(Bude North Cornwall Cricket Club)
+
+ggmap(map.r) + geom_point(
+    aes(x = lon, y = lat),
+    data = gc4, color = "yellow", size = 3
+  )
+
+ggmap(map.w) + geom_point(
+    aes(x = lon, y = lat),
+    data = gc4, color = "yellow", size = 3
+  )
+
+plot(1:10, ty = "n", xlab = "", ylab = "", yaxt = "n", xaxt = "n")
+rasterImage(readJPEG("Cricket Ground.jpg"), 0, 0, 10.5, 10.5)
+```
+Bude North Cornwall Cricket Club is situated on the clifftops overlooking the Atlantic Ocean, and is quite simply one of the most stunning locations you could ever wish to visit, let alone play cricket at! And it was founded in 1870. Over the years it has played host to Hockey matches, Tennis, Cricket and even used for Mortar practice in WW2!(source from: http://budecc.play-cricket.com/)
+
+
+```{r}
+# The Budehaven Guesthouse(pub)
+
+ggmap(map.r) + geom_point(
+   aes(x = lon, y = lat),
+    data = gc5, color = "orange", size = 3
+  )
+
+ggmap(map.w) + geom_point(
+   aes(x = lon, y = lat),
+    data = gc5, color = "orange", size = 3
+  )
+plot(1:10, ty = "n", xlab = "", ylab = "", yaxt = "n", xaxt = "n")
+rasterImage(readJPEG("The Budehaven Guesthouse.jpg"), 0, 0, 10.5, 10.5)
+```
+Enjoy the homely comforts of our award winning guesthouse. The Bude Haven is an 8 minute walk approx to the sandy beaches of Bude, North Bude golf course, and the Bude town centre is less than a 10 minute stroll. We are also within easy reach of many attractions and activities. It is an ideal base for your break. Children are welcome.(source from: http://www.thebudehaven.com/)
+
+```{r}
+# Map with Route from Cricket Grounds to The Budehaven Guesthouse
+
+ggmap(map.r) +
+  geom_point(
+    aes(x = lon, y = lat),
+    data = gc4, color = "yellow", size = 3
+  ) +
+  geom_point(
+    aes(x = lon, y = lat),
+    data = gc5, color = "orange", size = 3
+  )
+
+ggmap(map.w) +
+  geom_point(
+    aes(x = lon, y = lat),
+    data = gc4, color = "yellow", size = 3
+  ) +
+  geom_point(
+    aes(x = lon, y = lat),
+    data = gc5, color = "orange", size = 3
+  )
+```
+The Budehaven Guesthouse is so close to Cricket Ground and it will only take about 5 mins walk which is really convenient. 
