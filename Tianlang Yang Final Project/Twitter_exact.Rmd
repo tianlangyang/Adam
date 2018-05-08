@@ -1,0 +1,267 @@
+ ---
+title: "Twitter"
+author: "Tianlang Yang"
+date: "2018/04/25"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r twitter setup}
+
+require(devtools)
+require(twitteR)
+require(ggmap)
+require(googleway)
+require(plyr)
+require(stringr)
+api_key <- 	"nwR0GJ8IVl8Thg1Kwq1PYwwvj"
+api_secret <- "4a9AAi9jsfINxUJ89SQd4V61irtwUJwbGMg1Ggg5DNx1vKV7EH"
+access_token <- "927639034834440192-UtCScP9mSEwHPLIRkaUEovcSfwQoZv1"
+access_token_secret <- "7RLFGAlwSYHyCFAMqN6iwQpdceWoGEjgR55TOS9xlxlQb"
+  
+
+
+setup_twitter_oauth(api_key, api_secret, access_token, access_token_secret)
+
+```
+
+
+
+```{r gather data1}
+#Gather data #Coacheslla2018
+tweets1 <- searchTwitter("#Coachella2018", n=600, lang="en")
+tweets.df1 <- twListToDF(tweets1)
+```
+
+```{r gather data2}
+#Gather data #Coachella
+tweets2 <- searchTwitter("#Coachella", n=600, lang="en")
+tweets.df2 <- twListToDF(tweets2)
+```
+
+```{r gather data3}
+#Gather data #Beychella
+tweets3 <- searchTwitter("#Beychella", n=600, lang="en")
+tweets.df3 <- twListToDF(tweets3)
+```
+
+
+```{r save tweets}
+#Save data for later and read them again
+write.csv(tweets.df1, file = "tweets1.csv")
+tweets.df1 <- read.csv("tweets1.csv", row.names = 1)
+write.csv(tweets.df2, file = "tweets2.csv")
+tweets.df2 <- read.csv("tweets2.csv", row.names = 1)
+write.csv(tweets.df3, file = "tweets3.csv")
+tweets.df3 <- read.csv("tweets3.csv", row.names = 1)
+```
+
+
+```{r google}
+#My google API key for the use of geocode function
+register_google(key = 'AIzaSyBdtPR-wFU0HK9tW3ke1tiLfCFG__0Xpw8')
+```
+
+
+```{r get location1, echo=FALSE}
+# get users' location using twitter API
+# get data through 12 batches and combine them into one since twitter only allow to lookupUsers 50 users everytime.
+
+
+user1 <- lookupUsers(tweets.df1$screenName[c(1:50)])  
+user2 <- lookupUsers(tweets.df1$screenName[c(51:100)])
+user3 <- lookupUsers(tweets.df1$screenName[c(101:150)])
+user4 <- lookupUsers(tweets.df1$screenName[c(151:200)])
+user5 <- lookupUsers(tweets.df1$screenName[c(201:250)])
+user6 <- lookupUsers(tweets.df1$screenName[c(251:300)])
+user7 <- lookupUsers(tweets.df1$screenName[c(301:350)])
+user8 <- lookupUsers(tweets.df1$screenName[c(351:400)])
+user9 <- lookupUsers(tweets.df1$screenName[c(401:450)])
+user10 <- lookupUsers(tweets.df1$screenName[c(451:500)])
+user11 <- lookupUsers(tweets.df1$screenName[c(501:550)])
+user12 <- lookupUsers(tweets.df1$screenName[c(551:600)])
+userinfo1 <- append(append(append(append(append(append(user1,user2),append(user3,user4)),append(user5,user6)),append(user7,user8)),append(user9,user10)),append(user11,user12))
+
+userFrame1 <- twListToDF(userinfo1) 
+locatedUsers1 <- !is.na(userFrame1$location)  # Keep only users with location info
+locations1 <- geocode(userFrame1$location[locatedUsers1])
+write.csv(locations1, file = "userlocation1.csv")
+locations1 <- read.csv("userlocation1.csv", row.names = 1)
+
+```
+
+```{r get location2, echo=FALSE}
+# get users' location using twitter API
+
+user13 <- lookupUsers(tweets.df2$screenName[c(1:50)]) 
+user14 <- lookupUsers(tweets.df2$screenName[c(51:100)])
+user15 <- lookupUsers(tweets.df2$screenName[c(101:150)])
+user16 <- lookupUsers(tweets.df2$screenName[c(151:200)])
+user17 <- lookupUsers(tweets.df2$screenName[c(201:250)])
+user18 <- lookupUsers(tweets.df2$screenName[c(251:300)])
+user19 <- lookupUsers(tweets.df2$screenName[c(301:350)])
+user20 <- lookupUsers(tweets.df2$screenName[c(351:400)])
+user21 <- lookupUsers(tweets.df2$screenName[c(401:450)])
+user22 <- lookupUsers(tweets.df2$screenName[c(451:500)])
+user23 <- lookupUsers(tweets.df2$screenName[c(501:550)])
+user24 <- lookupUsers(tweets.df2$screenName[c(551:600)])
+userinfo2 <- append(append(append(append(append(append(user13,user14),append(user15,user16)),append(user17,user18)),append(user19,user20)),append(user21,user22)),append(user23,user24))
+
+userFrame2 <- twListToDF(userinfo2) 
+locatedUsers2 <- !is.na(userFrame2$location)# Keep only users with location info
+locations2 <- geocode(userFrame2$location[locatedUsers2])
+write.csv(locations2, file = "userlocation2.csv")
+locations2 <- read.csv("userlocation2.csv", row.names = 1)
+ 
+```
+
+```{r get location3, echo=FALSE}
+# get users' location using twitter API
+
+user25 <- lookupUsers(tweets.df3$screenName[c(1:50)])  
+user26 <- lookupUsers(tweets.df3$screenName[c(51:100)])
+user27 <- lookupUsers(tweets.df3$screenName[c(101:150)])
+user28 <- lookupUsers(tweets.df3$screenName[c(151:200)])
+user29 <- lookupUsers(tweets.df3$screenName[c(201:250)])
+user30 <- lookupUsers(tweets.df3$screenName[c(251:300)])
+user31 <- lookupUsers(tweets.df3$screenName[c(301:350)])
+user32 <- lookupUsers(tweets.df3$screenName[c(351:400)])
+user33 <- lookupUsers(tweets.df3$screenName[c(401:450)])
+user34 <- lookupUsers(tweets.df3$screenName[c(451:500)])
+user35 <- lookupUsers(tweets.df3$screenName[c(501:550)])
+user36 <- lookupUsers(tweets.df3$screenName[c(551:600)])
+userinfo3 <- append(append(append(append(append(append(user25,user26),append(user27,user28)),append(user29,user30)),append(user31,user32)),append(user33,user34)),append(user35,user36))
+
+userFrame3 <- twListToDF(userinfo3) 
+locatedUsers3 <- !is.na(userFrame3$location)# Keep only users with location info
+locations3 <- geocode(userFrame3$location[locatedUsers3])
+write.csv(locations3, file = "userlocation3.csv")
+locations3 <- read.csv("userlocation3.csv", row.names = 1)
+
+```
+
+
+```{r combine location}
+#Combine locations with each data set
+userlocation1 <- cbind(userFrame1, locations1)
+userlocation2 <- cbind(userFrame2, locations2)
+userlocation3 <- cbind(userFrame3, locations3)
+userlocation1 <- merge(tweets.df1,userlocation1, by="screenName")
+userlocation2 <- merge(tweets.df2,userlocation2, by="screenName")
+userlocation3 <- merge(tweets.df3,userlocation3, by="screenName")
+```
+
+#Create Sentiment scores function
+```{r score function}
+#Read the dictionary
+positives = readLines("positive words.txt")
+negatives = readLines("negative words.txt")
+
+sentiment_scores = function(tweets, positive_words, negative_words, .progress='none'){
+scores = laply(tweets,function(tweets, positive_words, negative_words){
+              tweets = gsub("[[:punct:]]", "", tweets) # remove punctuation
+              tweets = gsub("[[:cntrl:]]", "", tweets)# remove control character
+             tweets = gsub('\\+', '', tweets)         # remove digits
+                   
+ 
+# Let's have error handling function when trying tolower
+ tryTolower = function(x){
+ # create missing value
+  y = NA
+ # tryCatch error
+  try_error = tryCatch(tolower(x), error=function(e) e)
+ # if not an error
+  if (!inherits(try_error, "error"))
+      y = tolower(x)
+# result
+  return(y)
+                   }
+# use tryTolower with sapply
+ tweets = sapply(tweets, tryTolower)
+# split sentence into words with str_split function from stringr package
+ word_list = str_split(tweets, "\\s+")
+words = unlist(word_list)
+   
+                
+# compare words to the dictionaries of positive & negative terms
+positive.matches = match(words, positive_words) 
+negative.matches = match(words, negative_words)
+# get the position of the matched term or NA
+positive_matches <- !is.na(positive.matches)
+negative_matches <- !is.na(negative.matches)
+# final score
+score = sum(positive_matches) - sum(negative_matches)
+return(score)
+}, positive_words, negative_words, .progress=.progress)
+return(scores)
+}
+
+```
+
+
+# get sentiment scores for each search
+```{r sentiment score}
+#get sentiment score for data1 and combine them
+score = sentiment_scores(userlocation1$text, positives,
+                          negatives,.progress='text')
+data1 <- cbind(userlocation1, score)
+data1 <- cbind(data1, abs(score))
+
+#for data2
+score = sentiment_scores(userlocation2$text, positives,
+                          negatives,.progress='text')
+data2 <- cbind(userlocation2, score)
+data2 <- cbind(data2, abs(score))
+
+#for data3
+score = sentiment_scores(userlocation3$text, positives,
+                          negatives,.progress='text')
+data3 <- cbind(userlocation3, score)
+data3 <- cbind(data3, abs(score))
+
+
+
+```
+
+#Clean all the data
+```{r clean1}
+#Clean data1
+data1 <- data.frame(data1$screenName,data1$text,data1$retweetCount,
+                    data1$favoriteCount , data1$score, data1$`abs(score)` 
+                    ,data1$lon, data1$lat)
+names(data1) <- c("screenName", "text", "retweetCount","favoriteCount",
+                  "score","absolute_score",  "lon", "lat")
+
+```
+
+```{r clean2}
+#Similarly, clean data2
+data2 <- data.frame(data2$screenName,data2$text,data2$retweetCount,
+                    data2$favoriteCount , data2$score, data2$`abs(score)` 
+                    ,data2$lon, data2$lat)
+names(data2) <- c("screenName", "text", "retweetCount","favoriteCount",
+                  "score","absolute_score",  "lon", "lat")
+
+```
+
+```{r clean3}
+#Clean data3
+data3 <- data.frame(data3$screenName,data3$text,data3$retweetCount,
+                    data3$favoriteCount , data3$score, data3$`abs(score)` 
+                    ,data3$lon, data3$lat)
+names(data3) <- c("screenName", "text", "retweetCount","favoriteCount",
+                  "score","absolute_score",  "lon", "lat")
+
+
+```
+
+#Save these data for analysis
+```{r save data}
+write.csv(data1,file = "data1.csv")
+write.csv(data2,file = "data2.csv")
+write.csv(data3,file = "data3.csv")
+total <- rbind(data1, data2, data3)
+write.csv(total,file = "total.csv")

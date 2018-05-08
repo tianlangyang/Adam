@@ -1,0 +1,324 @@
+---
+title: "Final Project Report"
+author: "Tianlang Yang"
+date: "2018/05/05"
+output: html_document
+---
+
+#Introduction
+  
+  The Coachella Valley Music and Arts Festival (commonly referred to as Coachella or the Coachella Festival) is an annual music and arts festival held at the Empire Polo Club in Indio, California, located in the Inland Empire's Coachella Valley in the Colorado Desert. Coachella is one of the largest, most famous, and most profitable music festivals in the United States and all over the world. The 2017 festival was attended by 250,000 people and grossed $114.6 million.
+  
+  In order to figure out what Internet users are talking about and how they feel about Coahcella music festival, this report analyzed data collected from twitter a week after the event took place. This report mainly focus on three parts:
+
+1.The frequency of words mentioned by users, showing by Word Cloud.
+
+2.Visualization of sentiments towards the music festival among different hashtags and locations: whether people Coachella 2018 more than other past years' Coachella? Whether Beyonce's performance at Coachella 2018 is better than Coachella 2018 or Coachella event on average? Besides normal maps, there is also a shiny application which creates an interactive map on tweet popularity.
+
+3.Statistical analysis that whether there is relationship between retweet number and sentiment score.
+
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r package setup, message=FALSE, warning=FALSE, include=FALSE}
+
+require(devtools)
+require(ggmap)
+require(plyr)
+require(stringr)
+require(dplyr)
+require(ggplot2)
+require(reshape)
+require(tm)
+require(RJSONIO)
+require(wordcloud)
+require(grid)
+require(gridExtra)
+require(tidyr)
+require(tidyverse)
+require(tidytext)
+require(lubridate)
+require(plyr)
+require(shiny)
+require(maps)
+require(leaflet)
+require(rsconnect)
+
+```
+
+#Data summary
+
+  I gathered 1956 observations in total (after deleting NA data points) since the geocode by Google API restricted 2500 requests per day for non-business use. (638 observations for #Coachella2018, 620 observations for #Coachella and 698 observations for #Beychella, together 1956 observations.
+  
+```{r read data, message=FALSE, warning=FALSE, include=FALSE}
+
+total <- read.csv("total.csv",row.names = 1)
+data3 <- read.csv("data3.csv",row.names = 1)
+data2 <- read.csv("data2.csv", row.names = 1)
+data1 <- read.csv("data1.csv",row.names = 1)
+```
+
+
+```{r text clean, message=FALSE, warning=FALSE, include=FALSE}
+#Define text clean function
+CleanTweets <- function(tweets)
+  {
+    tweets = gsub("(RT|via)((?:\\b\\W*@\\w+)+)", "", tweets)
+    tweets = gsub("@\\w+", "", tweets)
+    tweets = gsub("[[:punct:]]", "", tweets)
+    tweets = gsub("[[:digit:]]", "", tweets)
+    tweets = gsub("http\\w+", "", tweets)
+    tweets = gsub("[ \t]{2,}", "", tweets)
+    tweets = gsub("^\\s+|\\s+$", "", tweets)
+    tweets = gsub("amp", "", tweets)
+    # define "tolower error handling" function
+    try.tolower = function(x)
+    {
+      y = NA
+      try_error = tryCatch(tolower(x), error=function(e) e)
+      if (!inherits(try_error, "error"))
+        y = tolower(x)
+      return(y)
+    }
+    
+    tweets = sapply(tweets, try.tolower)
+    tweets = tweets[tweets != ""]
+    names(tweets) = NULL
+    return(tweets)
+  }
+
+#Clean all the text
+tweets1 <- gettext(data1$text)  # tweets of "#Coachella2018"
+tweets2 <- gettext(data2$text)  # tweets of "#Coachella"
+tweets3 <- gettext(data3$text)  # tweets of "#Beychella"
+tweets4 <- gettext(total$text)  # all tweets together
+
+```
+
+
+  To have a general understanding on what are the most popular words that people use in tweets to express their sentiment on the music festival, below are the wordclouds under each topic and the total dataframe.
+  
+  
+```{r wordcloud function, message=FALSE, warning=FALSE, include=FALSE}
+library(wordcloud)
+library(tm)
+library(tmap)
+  wordcloudentity<-function(tweets)
+  {
+    tweetCorpus<-Corpus(VectorSource(CleanTweets(tweets)))
+    tweetTDM<-TermDocumentMatrix(tweetCorpus,control=list(removePunctuation=TRUE
+    ,stopwords=c('Coachella', 'Beychella',stopwords('english')), 
+    removeNumbers=TRUE,tolower=TRUE))
+    tdMatrix <- as.matrix(tweetTDM) # creating a data matrix
+    
+    sortedMatrix<-sort(rowSums(tdMatrix),decreasing=TRUE) # calculate row sum of                       each term and sort in descending order (high freq to low)
+   cloudFrame<-data.frame(word=names(sortedMatrix),freq=sortedMatrix)#extracting
+   #names from named list in prev command and binding together into a dataframe 
+   #with frequencies
+     wcloudentity<-wordcloud(cloudFrame$word,cloudFrame$freq,max.words=200, colors=brewer.pal(8,"Dark2"),scale=c(8,1), random.order=FALSE)
+ return(wcloudentity)
+  }
+```
+
+
+From the word cloud for total dataframe, we can see both positive words like: "highest", "lol", "winners", and "great" and negative words like "damn". "Beychella" is one of the most mentioned word which didn't surprise me becasue of her extrodinary performance at Coachella 2018 and her popularity overall.
+
+
+Wordcloud for all data
+```{r wordcloud total, echo=FALSE, message=FALSE, warning=FALSE}
+#Wordcloud for total data
+wordtotal <- wordcloudentity(tweets4)
+
+```
+
+
+Wordcloud for hashtag #Coachella2018
+```{r wordcloud1, echo=FALSE, message=FALSE, warning=FALSE}
+#Wordcloud for #Coachella2018
+wordcloud1 <- wordcloudentity(tweets1)
+
+```
+
+
+Wordcloud for key words #Coachella
+```{r wordcloud2, echo=FALSE, message=FALSE, warning=FALSE}
+#Wordcloud for "#Coachella"
+wordcloud2 <- wordcloudentity(tweets2)
+
+```
+
+
+Wordcloud for hashtag #Beychella
+```{r wordcloud3, echo=FALSE, message=FALSE, warning=FALSE}
+#Wordcloud for #Beychella
+wordcloud3 <- wordcloudentity(tweets3)
+
+```
+
+
+  From the above three wordcloud for each topic we can see, from the wordcloud of total data, we can see word "Beychella" is mentioned a lot. "Great" is also mentioned a lot which means people are enjoying the festival. The wordcloud for #Coachella2018 focus on words like: "great", "stagecoach"(which is a California's country music festival during Coachella music festival), and "different". This means that most people enjoy the music festival, but there're still decent amount of people have ambivalent feelings about this year's festival by descibing it as "different".Tweets under key words #Coachella were more positive comparing to tweets under key words #Coachella2018. More positive words like: "winners", "invest", and "highest". Tweets under hashtag #Beychella doesn't have much sentimental words. However, words like "everybodymad"("mad" here should be excitment), "lovely", "like", and "crying" (here should be crying for the happiness and excitment) show that people have positive snetiment toward Beyonce's performance on Coachella 2018. 
+  Since the three wordcloud for each data set has mostly positive sentiment tendency, we can say the sentiment of overall data is positive. I also wrote a sentiment score function to calculate the score of every text. Text with negative sentiment has negative socre, and the higher absloute value of score, the stronger sentiment it has.
+  Below is the histogram for the overall data, we can see that the proportion of positive words is larger, and their sentiments are stronger, which means people are more likely to enjoy the music festival instead of perplex and upset by the chaos and crowd. 
+  
+  
+```{r sentiment plot, echo=FALSE, message=FALSE, warning=FALSE}
+
+#remove some "stopwords"
+reg <- "([^A-Za-z\\d#@']|'(?![A-Za-z\\d#@]))"
+tweet_words <- total %>%
+  filter(!str_detect(text, '^"')) %>%
+  mutate(tweets = text) %>%
+  mutate(text = str_replace_all(text, "https://t.co/[A-Za-z\\d]+|&amp;", "")) %>%
+  unnest_tokens(word, text, token = "regex", pattern = reg) %>%
+  filter(!word %in% stop_words$word,
+         str_detect(word, "[a-z]"))
+#find the most common words in tweets
+commonword <- tweet_words %>%
+  dplyr::count(word, sort = TRUE) %>%
+  head(20) %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(word, n)) +
+  geom_bar(stat = "identity") +
+  coord_flip()
+
+bing <- get_sentiments("bing")
+bing_word_counts <- tweet_words %>%
+  inner_join(bing) %>%
+  dplyr::count(word, sentiment, sort = TRUE) %>%
+  ungroup()
+
+bing_word_counts <- bing_word_counts[-1, ]
+
+#remove the top key words and then plot words
+bing_word_counts %>%
+  filter(n > 20) %>%
+  mutate(n = ifelse(sentiment == "negative", -n, n)) %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(word, n, fill = sentiment)) +
+  geom_bar(stat = "identity") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  ylab("Sentiment")
+```
+
+
+#Map with sentiment
+
+ Having calculated sentiment scores, the question is whether there is relationship between the intensity of sentiment and people's location, i.e. people live in the west area like California may have stronger sentiment than people from the east coast since the event took place in Indio, California. To visaulize this question, below are the maps of sentimnet score for the total data and three set seperately. Here red represents positive sentiment and blue represent regative sentiment.
+ There seems to be more users located on the east coast than on the west coast. Also, the color for tweets from the west coast is darker, especially in south California which means people there have more positive sentiment. From the maps, we found out that the sentiment map for #Beychella has the most positive sentiment but also the most negative sentiment. This shows that some people really like Beyonce's performance, while others may not like her performance. However, overall, most people enjoyed it. 
+ 
+ 
+
+ 
+```{r map sentiment, echo=FALSE, message=FALSE, warning=FALSE}
+#Get the US map
+USmap = ggmap(get_googlemap(center =as.numeric(geocode("United States")),
+                            scale=2, zoom=4), extent="device") 
+
+#Draw map for total data
+map1<- USmap +
+  geom_point(aes(x=lon, y=lat), col=ifelse(((total$score>=0)),"red", "blue"), data=total, alpha=0.4, size=total$absolute_score) +
+  scale_size_continuous(range=total$score)+
+  ggtitle("Sentiment map for total data set")
+map1
+```
+
+```{r map2, echo=FALSE, message=FALSE, warning=FALSE}
+# mapping under #Coachella2018
+map2 <- USmap +
+  geom_point(aes(x=lon, y=lat), col=ifelse(((data1$score>=0)),"red", "blue"), data=data1, alpha=0.4, size=data1$absolute_score) +
+  scale_size_continuous(range=data1$score)+
+  ggtitle("Sentiment map for #Coachella2018")
+map2
+```
+
+```{r map3, echo=FALSE, message=FALSE, warning=FALSE}
+# mapping under #Coachella
+map3 <- USmap +
+  geom_point(aes(x=lon, y=lat), col=ifelse(((data2$score>=0)),"red", "blue"), data=data2, alpha=0.4, size=data2$absolute_score) +
+  scale_size_continuous(range=data2$score)+
+  ggtitle("Sentiment map for #Coachella")
+map3
+```
+
+
+```{r map4, echo=FALSE, message=FALSE, warning=FALSE}
+# mapping under #Beychella
+map4 <- USmap +
+  geom_point(aes(x=lon, y=lat), col=ifelse(((data3$score>=0)),"red", "blue"), data=data3, alpha=0.4, size=data3$absolute_score) +
+  scale_size_continuous(range=data3$score)+
+  ggtitle("Sentiment map for #Beychella")
+map4
+```
+
+
+```{r shiny, eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+#Shiny interactive map for retweet count
+d <- read.csv("total.csv", row.names = 1)
+d <- mutate(d, popup_info=paste(sep = "<br/>", paste0("<b>",d$screenName, "</b>"), paste0 ("retweet count: ", d$retweetCount), paste0 ("sentiment score: ",d$score)))
+
+factorpal<- colorFactor(
+  palette = "RdPu",
+  domain = c(d$retweetCount),
+  level = NULL,
+  ordered= FALSE, 
+  na.color = "#808080"
+)
+
+r_colors <- rgb(t(col2rgb(colors()) / 255))
+names(r_colors) <- colors()
+
+ui <- fluidPage(
+  leafletOutput("PopularityMap"),
+  p()
+)
+
+server <- function(input, output, session) {
+ 
+  output$PopularityMap <- renderLeaflet({
+    leaflet(d) %>%
+      addTiles(
+      ) %>%  # Add default OpenStreetMap map tiles
+      addCircleMarkers(lng=~lon,
+                       lat = ~lat, 
+                       popup= ~popup_info,
+                       radius = 3,
+                       color = ~factorpal(d$retweetCount),
+                       fillOpacity = 1) %>%
+      addProviderTiles("Stamen.Watercolor") %>%
+      addProviderTiles("CartoDB.Positron") %>%
+      setView(lng = -96.71289, lat = 37.09024, zoom = 4)
+  })
+}
+
+shinyApp(ui, server)
+
+```
+
+
+#Statistical Analysis
+ 
+
+###Summary table
+```{r score summary, echo=FALSE, message=FALSE, warning=FALSE}
+summary(total$score)
+```
+ From the summary of score we can see the average sentiment score is positive(0.3175), with minimum of -2 and maximum of 4. This means the overall sentiment is more positive, which matches the conclusion above.
+ 
+
+###ANOVA table
+  
+  Below is the Anova table that analyze the relationship between sentiment and retweet number. Here p-value<0.05, which means that we should reject the null hypothesis at 95% confidence interval. Then the conclusion is that sentiment score  have effect on retweet count, the stronger sentiment is, the more retweet count it would cause.
+  
+```{r anova, echo=FALSE, message=FALSE, warning=FALSE}
+# Anova table that analyze the relationship between sentiment and retweet number
+summary(lm(total$retweetCount~total$absolute_score))
+
+```
+
+
+#Conclusion
+  From the analysis above, we can see that the sentiment of texts is different among different keywords and hashtags. Overall the data set is more positive. Also, the popularity of the text, represented by retweet counts, is related to the strength of attitude. For future inprovement, it would be better to overcome the restrict of Google geocode API and gather more data. A larger dataset will saturate this project with more factual evidences.
