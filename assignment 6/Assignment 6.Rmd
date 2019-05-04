@@ -141,3 +141,22 @@ ggmap(map.w) +
   )
 ```
 The Budehaven Guesthouse is so close to Cricket Ground and it will only take about 5 mins walk which is really convenient. 
+
+# Hotels
+## The Falcon Hotel
+Established in 1798, The Falcon Hotel is situated aside Bude's historic Canal, offering the perfect setting for weddings and holidays in North Cornwall.
+
+```{r, warning=FALSE,message=FALSE}
+##install.packages('magick')
+library(magick)
+falcon <- image_scale(image_read('http://static.laterooms.com/hotelphotos/laterooms/390811/gallery/the-falcon-hotel-bude_100920150842001875.jpg'), "430")
+print(falcon)
+```
+
+## Edgcumbe Hotel
+Edgcumbe Hotel in Bude, offers B&B style beachside accommodation and a weddings venue with captivating views of North Cornwall's Coastline.
+
+```{r}
+edgcumbe <- image_scale(image_read('https://www.chycor.co.uk/hotels/edgcumbe/images/edgcumbe.jpg'), "400")
+print(edgcumbe)
+```
